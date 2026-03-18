@@ -263,23 +263,23 @@ nyc-yellow-taxi-public-data-analyzer/
 
 ## Getting Started
 
-> **Prerequisites:** Python 3.13, AWS account, Snowflake account, Airflow 3.x
+> **Prerequisites:** [uv](https://docs.astral.sh/uv/getting-started/installation/), AWS account, Snowflake account, Airflow 3.x
+> Python 3.13 is managed automatically by uv via `.python-version`.
 
 ```bash
 # Clone the repository
 git clone https://github.com/your-username/nyc-yellow-taxi-public-data-analyzer.git
 cd nyc-yellow-taxi-public-data-analyzer
 
-# Install dependencies
-pip install -r requirements.txt
+# Install all dependencies (creates .venv automatically)
+uv sync
 
 # Configure environment variables
 cp .env.example .env
 # Edit .env with your AWS credentials, Snowflake connection string, etc.
 
-# Initialize Airflow
-airflow db init
-airflow dags trigger taxi_etl_dag
+# Run any tool via uv run (no manual venv activation needed)
+uv run pytest tests/
 ```
 
 > **Note:** Full setup guide with environment configuration details coming soon.
