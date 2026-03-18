@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.10.9"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync
+
+      # ── Lint ────────────────────────────────────────────────────────────
+      - name: Lint (ruff)
+        run: uv run ruff check .
+
+      # ── Format ──────────────────────────────────────────────────────────
+      - name: Format check (black)
+        run: uv run black --check .
+
+      # ── Type check ──────────────────────────────────────────────────────
+      # continue-on-error: true until the codebase has full type annotations
+      - name: Type check (mypy)
+        run: uv run mypy pipeline/ --ignore-missing-imports
+        continue-on-error: true
+
+      # ── Airflow DAG validation ───────────────────────────────────────────
+      # Added in Phase 7 once DAGs exist.
+      # Verifies all DAGs parse without import errors — a broken DAG import
+      # silently kills your entire Airflow scheduler.
+      - name: Validate Airflow DAGs
+        run: |
+          if [ -d "dags" ] && find dags/ -name "*.py" | grep -q .; then
+            uv run python -c "
+          import os, importlib.util, sys
+          for f in os.listdir('dags'):
+              if f.endswith('.py'):
+                  spec = importlib.util.spec_from_file_location(f, f'dags/{f}')
+                  mod = importlib.util.module_from_spec(spec)
+                  spec.loader.exec_module(mod)
+                  print(f'  OK: dags/{f}')
+          "
+          else
+            echo "No DAGs found yet — skipping"
+          fi
+
+      # ── Tests ────────────────────────────────────────────────────────────
+      # Exit code 5 = no tests collected (acceptable while project is starting).
+      # Once tests exist, failures will correctly break CI.
+      - name: Run tests
+        run: |
+          uv run pytest tests/ -v --tb=short --cov=pipeline --cov-report=term-missing
+          exit_code=$?
+          [ $exit_code -eq 5 ] && echo "No tests collected yet" && exit 0
+          exit $exit_code
