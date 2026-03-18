@@ -2,8 +2,8 @@
 
 > A production-style ELT data platform for analyzing 10+ years of NYC Yellow Taxi trip data to answer whether starting a taxi operation in New York City is financially viable.
 
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![Apache Airflow](https://img.shields.io/badge/Airflow-2.x-017CEE?logo=apacheairflow)
+![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python)
+![Apache Airflow](https://img.shields.io/badge/Airflow-3.x-017CEE?logo=apacheairflow)
 ![AWS S3](https://img.shields.io/badge/AWS_S3-Storage-FF9900?logo=amazons3)
 ![Snowflake](https://img.shields.io/badge/Snowflake-Warehouse-29B5E8?logo=snowflake)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit)
@@ -101,10 +101,19 @@ The result is a self-updating analytics platform that answers concrete questions
 
 ### Backfill Strategy
 
-The pipeline starts from the most recent available month and works backwards, processing one month per daily DAG execution. It stops automatically when the TLC API returns no data for the target month. This approach:
-- Keeps daily runs lightweight (one month at a time)
-- Builds a complete multi-year historical dataset over time
-- Allows resuming from where processing last stopped (idempotent runs)
+The pipeline runs in two phases, managed by a pointer stored in Airflow metadata:
+
+**Phase 1 — Historical backfill**
+Starts from the most recent available month and works backwards, processing one month per daily DAG execution. When the source returns no data for the target month, the historical backfill is considered complete.
+
+**Phase 2 — Ongoing refresh**
+Once the backfill is complete, the pipeline switches to forward-looking mode. Each daily run checks whether a new month's data has become available. NYC TLC data is published monthly with approximately a **3-month lag** (e.g. in March 2026, the latest available data is from December 2025). The DAG checks for the next expected month and skips gracefully if it has not been published yet.
+
+This approach:
+- Keeps each run lightweight — one month processed per execution
+- Builds a complete multi-year historical dataset progressively
+- Transitions automatically from backfill to ongoing refresh without manual intervention
+- Is idempotent — a failed run can be retried for only the affected month
 
 ---
 
@@ -124,7 +133,7 @@ The pipeline starts from the most recent available month and works backwards, pr
 | Property | Detail |
 |---|---|
 | **Input** | Raw Parquet files from S3 |
-| **Tools** | Python 3 + Pandas + PyArrow |
+| **Tools** | Python 3 + Pandas (PyArrow as implicit Parquet engine) |
 | **Output** | Cleaned, validated, enriched Pandas DataFrames |
 
 **Transformation steps:**
@@ -223,7 +232,7 @@ The platform is built to answer five core categories of business questions:
 |---|---|---|
 | **Orchestration** | Apache Airflow | Industry-standard workflow orchestrator; native support for DAG-based scheduling and backfill logic |
 | **Raw Storage** | AWS S3 | Scalable, cheap object storage; ideal for landing raw files before transformation |
-| **Processing** | Python 3 + Pandas + PyArrow | Pandas is the de-facto standard for tabular data transformation; PyArrow enables efficient Parquet I/O |
+| **Processing** | Python 3 + Pandas | Pandas is the de-facto standard for tabular data transformation. PyArrow is installed as a dependency and used by Pandas internally to read/write Parquet files — no PyArrow code is written directly |
 | **Warehouse** | Snowflake | Columnar analytical warehouse optimized for OLAP queries; separates storage and compute |
 | **Visualization** | Streamlit | Python-native dashboard framework; minimizes context-switching and integrates cleanly with Pandas/Snowflake |
 
@@ -254,7 +263,7 @@ nyc-yellow-taxi-public-data-analyzer/
 
 ## Getting Started
 
-> **Prerequisites:** Python 3.11+, AWS account, Snowflake account, Airflow 2.x
+> **Prerequisites:** Python 3.13, AWS account, Snowflake account, Airflow 3.x
 
 ```bash
 # Clone the repository
@@ -295,17 +304,7 @@ Processing one month per daily DAG run keeps each execution lightweight and idem
 
 ## Roadmap
 
-- [ ] Project scaffolding and repo structure
-- [ ] Airflow DAG: extract and land to S3
-- [ ] Pandas transformation pipeline
-- [ ] Snowflake schema and loader
-- [ ] Streamlit dashboard v1 (route profitability, peak hours)
-- [ ] Weather data integration (Open-Meteo API)
-- [ ] Unit and integration tests
-- [ ] Streamlit dashboard v2 (full analytics suite)
-- [ ] CI/CD pipeline (GitHub Actions)
-- [ ] Infrastructure as Code (Terraform for AWS resources)
-- [ ] dbt integration for modular SQL transformations
+See [ROADMAP.md](ROADMAP.md) for the full project roadmap and progress tracking.
 
 ---
 
