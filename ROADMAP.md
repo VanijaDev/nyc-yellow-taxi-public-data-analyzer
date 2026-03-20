@@ -16,9 +16,9 @@ Project scaffolding, documentation, and CI infrastructure.
 - [x] Document source schema and data quality caveats
 - [x] Write README
 - [x] Set up GitHub Actions CI (lint, format, type check, tests)
-- [ ] Set up repo directory structure (dags/, pipeline/, models/, dashboard/, tests/)
-- [ ] Create pyproject.toml with runtime dependencies as they are added
-- [ ] Create .env.example
+- [x] Set up repo directory structure (pipeline/extract/, tests/)
+- [x] Create pyproject.toml with runtime dependencies as they are added
+- [x] Create .env.example
 
 ---
 
