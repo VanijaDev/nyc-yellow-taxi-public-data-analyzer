@@ -3,7 +3,9 @@ name = "nyc-yellow-taxi-public-data-analyzer"
 version = "0.1.0"
 description = "Production-style ELT data platform for analyzing NYC Yellow Taxi trip data"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+]
 
 [dependency-groups]
 dev = [
