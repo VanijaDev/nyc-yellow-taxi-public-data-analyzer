@@ -26,8 +26,8 @@ Project scaffolding, documentation, and CI infrastructure.
 
 Plain Python script — no Airflow yet. Goal: reliably download a raw Parquet file from the TLC source.
 
-- [ ] Implement extract function: download monthly Parquet from TLC public endpoint
-- [ ] Handle missing month: return a clear signal when the source has no data for a target month
+- [x] Implement extract function: download monthly Parquet from TLC public endpoint
+- [x] Handle missing month: return a clear signal when the source has no data for a target month
 - [ ] Handle schema evolution: detect pre-2016 (lat/lng) vs modern (zone ID) format
 - [ ] Run manually and confirm the file downloads correctly
 - [ ] **Tests:** correct URL construction, HTTP error handling, missing-month signal, schema format detection
