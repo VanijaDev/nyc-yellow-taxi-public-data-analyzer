@@ -28,9 +28,8 @@ Plain Python script — no Airflow yet. Goal: reliably download a raw Parquet fi
 
 - [x] Implement extract function: download monthly Parquet from TLC public endpoint
 - [x] Handle missing month: return a clear signal when the source has no data for a target month
-- [ ] Handle schema evolution: detect pre-2016 (lat/lng) vs modern (zone ID) format
-- [ ] Run manually and confirm the file downloads correctly
-- [ ] **Tests:** correct URL construction, HTTP error handling, missing-month signal, schema format detection
+- [x] Run manually and confirm the file downloads correctly
+- [ ] **Tests:** correct URL construction, HTTP error handling, missing-month signal
 
 ---
 
@@ -48,6 +47,7 @@ Goal: upload the raw downloaded file to S3 unchanged.
 
 Goal: take a raw Parquet from S3, produce clean fact/dim DataFrames.
 
+- [ ] Handle schema evolution: detect pre-2016 (lat/lng) vs modern (zone ID) format
 - [ ] Implement null handling for all 20 fields
 - [ ] Implement business rule validation (pickup < dropoff, positive fares, valid location IDs)
 - [ ] Implement outlier removal
