@@ -13,7 +13,7 @@ class MonthNotAvailableError(Exception):
         super().__init__(f"Data for {year}-{month:02d} not found.")
 
 
-def build_url(year: int, month: int) -> str:
+def _build_url(year: int, month: int) -> str:
     """Build the URL for the TLC trip data file for a given year and month."""
     current_year = datetime.date.today().year
     if year > current_year:
@@ -39,7 +39,7 @@ def download_monthly_data(year: int, month: int) -> bytes:
         HTTPStatusError: If an HTTP error occurs during the request.
     """
     
-    url = build_url(year, month)
+    url = _build_url(year, month)
 
     with httpx.stream("GET", url, timeout=TLC_REQUEST_TIMEOUT) as response:
         if response.status_code in (403, 404):
