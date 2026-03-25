@@ -8,7 +8,7 @@
 ![Snowflake](https://img.shields.io/badge/Snowflake-Warehouse-29B5E8?logo=snowflake)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit)
 ![Status](https://img.shields.io/badge/Status-In_Development-yellow)
-![CI](https://github.com/your-username/nyc-yellow-taxi-public-data-analyzer/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/VanijaDev/nyc-yellow-taxi-public-data-analyzer/actions/workflows/ci.yml/badge.svg)
 
 ---
 
@@ -50,11 +50,11 @@ The result is a self-updating analytics platform that answers concrete questions
 
 ## Target Users
 
-| User | Use Case |
-|---|---|
-| **Taxi fleet operators** | Evaluate NYC market entry and optimize existing operations |
-| **Ride-hailing entrepreneurs** | Size the market opportunity before launching |
-| **Operations managers** | Optimize scheduling, routing, and vehicle capacity decisions |
+| User                           | Use Case                                                     |
+| ------------------------------ | ------------------------------------------------------------ |
+| **Taxi fleet operators**       | Evaluate NYC market entry and optimize existing operations   |
+| **Ride-hailing entrepreneurs** | Size the market opportunity before launching                 |
+| **Operations managers**        | Optimize scheduling, routing, and vehicle capacity decisions |
 
 ---
 
@@ -110,6 +110,7 @@ Starts from the most recent available month and works backwards, processing one 
 Once the backfill is complete, the pipeline switches to forward-looking mode. Each daily run checks whether a new month's data has become available. NYC TLC data is published monthly with approximately a **3-month lag** (e.g. in March 2026, the latest available data is from December 2025). The DAG checks for the next expected month and skips gracefully if it has not been published yet.
 
 This approach:
+
 - Keeps each run lightweight — one month processed per execution
 - Builds a complete multi-year historical dataset progressively
 - Transitions automatically from backfill to ongoing refresh without manual intervention
@@ -121,22 +122,23 @@ This approach:
 
 ### Stage 1 — Extract & Land (Raw Storage)
 
-| Property | Detail |
-|---|---|
-| **Source** | NYC TLC Yellow Taxi monthly Parquet files (public HTTP endpoints) |
-| **Action** | Download target month → store raw files unchanged |
-| **Destination** | `s3://nyc-taxi-raw/{year}/{month}/` |
-| **Key rule** | No transformations at ingest — preserve original schema |
+| Property        | Detail                                                            |
+| --------------- | ----------------------------------------------------------------- |
+| **Source**      | NYC TLC Yellow Taxi monthly Parquet files (public HTTP endpoints) |
+| **Action**      | Download target month → store raw files unchanged                 |
+| **Destination** | `s3://nyc-taxi-raw/{year}/{month}/`                               |
+| **Key rule**    | No transformations at ingest — preserve original schema           |
 
 ### Stage 2 — Transform
 
-| Property | Detail |
-|---|---|
-| **Input** | Raw Parquet files from S3 |
-| **Tools** | Python 3 + Pandas (PyArrow as implicit Parquet engine) |
-| **Output** | Cleaned, validated, enriched Pandas DataFrames |
+| Property   | Detail                                                 |
+| ---------- | ------------------------------------------------------ |
+| **Input**  | Raw Parquet files from S3                              |
+| **Tools**  | Python 3 + Pandas (PyArrow as implicit Parquet engine) |
+| **Output** | Cleaned, validated, enriched Pandas DataFrames         |
 
 **Transformation steps:**
+
 - Remove outliers and handle missing values
 - Validate business rules (pickup time < dropoff time, positive fares, valid location IDs)
 - Derive computed fields: trip duration, revenue per mile, average speed
@@ -144,18 +146,18 @@ This approach:
 
 ### Stage 3 — Load
 
-| Property | Detail |
-|---|---|
-| **Input** | Transformed Pandas DataFrames |
-| **Destination** | Snowflake analytical schema |
-| **Method** | `snowflake-connector-python` with `pandas.DataFrame.to_sql()` |
+| Property        | Detail                                                        |
+| --------------- | ------------------------------------------------------------- |
+| **Input**       | Transformed Pandas DataFrames                                 |
+| **Destination** | Snowflake analytical schema                                   |
+| **Method**      | `snowflake-connector-python` with `pandas.DataFrame.to_sql()` |
 
 ### Stage 4 — Serve (Dashboard)
 
-| Property | Detail |
-|---|---|
-| **Input** | Snowflake analytical tables |
-| **Tool** | Streamlit |
+| Property    | Detail                                                                    |
+| ----------- | ------------------------------------------------------------------------- |
+| **Input**   | Snowflake analytical tables                                               |
+| **Tool**    | Streamlit                                                                 |
 | **Outputs** | Route heatmaps, revenue trends, capacity analytics, weather impact charts |
 
 ---
@@ -199,27 +201,32 @@ Star schema optimized for analytical queries:
 The platform is built to answer five core categories of business questions:
 
 ### Route & Zone Intelligence
+
 - Most profitable pickup → dropoff routes by total revenue
 - High-demand pickup zones with underserved dropoff areas
 - Airport transfer profitability vs. standard trips
 - Historical revenue trends per route (3-year view)
 
 ### Vehicle Capacity Optimization
+
 - Revenue per vehicle type: sedan vs. SUV vs. van
 - Load factor: average passengers per trip by time and zone
 - Capacity utilization trends over time
 
 ### Peak Demand & Scheduling
+
 - Most profitable hours by zone and day of week
 - Rush hour vs. late night vs. weekend revenue patterns
 - Multi-year peak hour shift analysis for driver scheduling
 
 ### External Factor Impact
+
 - Weather correlation with trip volume and revenue (NOAA / Open-Meteo API)
 - Day-of-week and seasonal patterns
 - Holiday surge analysis
 
 ### Trip Economics
+
 - Fare-per-mile and fare-per-minute benchmarks by zone
 - Tip percentage analysis by fare amount, distance, and time of day
 - Fare and tip trend analysis (monthly and annual)
@@ -228,13 +235,13 @@ The platform is built to answer five core categories of business questions:
 
 ## Tech Stack
 
-| Layer | Technology | Justification |
-|---|---|---|
-| **Orchestration** | Apache Airflow | Industry-standard workflow orchestrator; native support for DAG-based scheduling and backfill logic |
-| **Raw Storage** | AWS S3 | Scalable, cheap object storage; ideal for landing raw files before transformation |
-| **Processing** | Python 3 + Pandas | Pandas is the de-facto standard for tabular data transformation. PyArrow is installed as a dependency and used by Pandas internally to read/write Parquet files — no PyArrow code is written directly |
-| **Warehouse** | Snowflake | Columnar analytical warehouse optimized for OLAP queries; separates storage and compute |
-| **Visualization** | Streamlit | Python-native dashboard framework; minimizes context-switching and integrates cleanly with Pandas/Snowflake |
+| Layer             | Technology        | Justification                                                                                                                                                                                         |
+| ----------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Orchestration** | Apache Airflow    | Industry-standard workflow orchestrator; native support for DAG-based scheduling and backfill logic                                                                                                   |
+| **Raw Storage**   | AWS S3            | Scalable, cheap object storage; ideal for landing raw files before transformation                                                                                                                     |
+| **Processing**    | Python 3 + Pandas | Pandas is the de-facto standard for tabular data transformation. PyArrow is installed as a dependency and used by Pandas internally to read/write Parquet files — no PyArrow code is written directly |
+| **Warehouse**     | Snowflake         | Columnar analytical warehouse optimized for OLAP queries; separates storage and compute                                                                                                               |
+| **Visualization** | Streamlit         | Python-native dashboard framework; minimizes context-switching and integrates cleanly with Pandas/Snowflake                                                                                           |
 
 ---
 
@@ -289,15 +296,19 @@ uv run pytest tests/
 ## Design Decisions & Trade-offs
 
 ### ELT over ETL
+
 Transform after landing raw data in S3. This preserves the original source data (making reruns safe and auditable) and decouples ingestion reliability from transformation complexity.
 
 ### Pandas over PySpark
+
 For this dataset size (monthly Parquet files, ~1–5 GB each), Pandas on a single machine is sufficient and far simpler to develop and debug. PySpark would add operational overhead without meaningful performance gains at this scale. This decision will be revisited if processing requirements exceed single-machine capacity.
 
 ### Snowflake over self-hosted PostgreSQL
+
 Snowflake's separation of storage and compute makes it cost-efficient for analytical workloads that run in bursts (dashboard queries) rather than continuously. A traditional RDBMS would require manual scaling and optimization for columnar analytical patterns.
 
 ### Monthly backfill cadence
+
 Processing one month per daily DAG run keeps each execution lightweight and idempotent. It also provides natural checkpointing—if a run fails, only that month needs to be retried.
 
 ---
@@ -310,10 +321,10 @@ See [ROADMAP.md](ROADMAP.md) for the full project roadmap and progress tracking.
 
 ## Data Sources & Schema
 
-| Source | Description | Format | Access |
-|---|---|---|---|
+| Source                                                                                   | Description                                                                                 | Format        | Access       |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------- | ------------ |
 | [NYC TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) | Monthly Yellow Taxi trip records with pickup/dropoff locations, fares, tips, and timestamps | Parquet / CSV | Public, free |
-| [Open-Meteo Historical API](https://open-meteo.com/) | Historical weather data for NYC (temperature, precipitation, wind) | JSON API | Public, free |
+| [Open-Meteo Historical API](https://open-meteo.com/)                                     | Historical weather data for NYC (temperature, precipitation, wind)                          | JSON API      | Public, free |
 
 ### Source Schema — NYC TLC Yellow Taxi Trip Records
 
@@ -321,28 +332,28 @@ See [ROADMAP.md](ROADMAP.md) for the full project roadmap and progress tracking.
 
 Types and nullability are taken from the actual Parquet file schema (verified via `DESCRIBE SELECT * FROM read_parquet(...)`). All columns are nullable.
 
-| # | Field | Parquet Type | Description |
-|---|---|---|---|
-| 1 | `VendorID` | INTEGER | TPEP provider (1=Creative Mobile Technologies, 2=VeriFone) |
-| 2 | `tpep_pickup_datetime` | TIMESTAMP | Meter engaged time |
-| 3 | `tpep_dropoff_datetime` | TIMESTAMP | Meter disengaged time |
-| 4 | `passenger_count` | BIGINT | Passengers in vehicle — **driver-entered, unreliable** |
-| 5 | `trip_distance` | DOUBLE | Trip distance in miles (taximeter) |
-| 6 | `RatecodeID` | BIGINT | Rate type: 1=Standard, **2=JFK**, **3=Newark**, 4=Nassau/Westchester, 5=Negotiated, 6=Group |
-| 7 | `store_and_fwd_flag` | VARCHAR | Y = record stored in vehicle before upload (connectivity issue) |
-| 8 | `PULocationID` | INTEGER | TLC Taxi Zone ID for pickup location |
-| 9 | `DOLocationID` | INTEGER | TLC Taxi Zone ID for dropoff location |
-| 10 | `payment_type` | BIGINT | 1=Credit card, 2=Cash, 3=No charge, 4=Dispute, 5=Unknown, 6=Voided |
-| 11 | `fare_amount` | DOUBLE | Time-and-distance fare from meter |
-| 12 | `extra` | DOUBLE | Rush hour ($1) and overnight ($0.50) surcharges |
-| 13 | `mta_tax` | DOUBLE | $0.50 MTA tax (automatically applied) |
-| 14 | `tip_amount` | DOUBLE | Tip — **credit card only. Cash tips are always $0.00 in this field** |
-| 15 | `tolls_amount` | DOUBLE | Total tolls paid |
-| 16 | `improvement_surcharge` | DOUBLE | $0.30 surcharge applied since 2015 |
-| 17 | `total_amount` | DOUBLE | Total charged to passenger (excludes cash tips) |
-| 18 | `congestion_surcharge` | DOUBLE | NYC taxi surcharge added **Feb 2019** — `NULL` in older records |
-| 19 | `Airport_fee` | DOUBLE | JFK/LaGuardia pickup/dropoff fee added **Jul 2022** — `NULL` in older records |
-| 20 | `cbd_congestion_fee` | DOUBLE | Central Business District congestion pricing fee added **Jan 2025** — `NULL` in older records |
+| #   | Field                   | Parquet Type | Description                                                                                   |
+| --- | ----------------------- | ------------ | --------------------------------------------------------------------------------------------- |
+| 1   | `VendorID`              | INTEGER      | TPEP provider (1=Creative Mobile Technologies, 2=VeriFone)                                    |
+| 2   | `tpep_pickup_datetime`  | TIMESTAMP    | Meter engaged time                                                                            |
+| 3   | `tpep_dropoff_datetime` | TIMESTAMP    | Meter disengaged time                                                                         |
+| 4   | `passenger_count`       | BIGINT       | Passengers in vehicle — **driver-entered, unreliable**                                        |
+| 5   | `trip_distance`         | DOUBLE       | Trip distance in miles (taximeter)                                                            |
+| 6   | `RatecodeID`            | BIGINT       | Rate type: 1=Standard, **2=JFK**, **3=Newark**, 4=Nassau/Westchester, 5=Negotiated, 6=Group   |
+| 7   | `store_and_fwd_flag`    | VARCHAR      | Y = record stored in vehicle before upload (connectivity issue)                               |
+| 8   | `PULocationID`          | INTEGER      | TLC Taxi Zone ID for pickup location                                                          |
+| 9   | `DOLocationID`          | INTEGER      | TLC Taxi Zone ID for dropoff location                                                         |
+| 10  | `payment_type`          | BIGINT       | 1=Credit card, 2=Cash, 3=No charge, 4=Dispute, 5=Unknown, 6=Voided                            |
+| 11  | `fare_amount`           | DOUBLE       | Time-and-distance fare from meter                                                             |
+| 12  | `extra`                 | DOUBLE       | Rush hour ($1) and overnight ($0.50) surcharges                                               |
+| 13  | `mta_tax`               | DOUBLE       | $0.50 MTA tax (automatically applied)                                                         |
+| 14  | `tip_amount`            | DOUBLE       | Tip — **credit card only. Cash tips are always $0.00 in this field**                          |
+| 15  | `tolls_amount`          | DOUBLE       | Total tolls paid                                                                              |
+| 16  | `improvement_surcharge` | DOUBLE       | $0.30 surcharge applied since 2015                                                            |
+| 17  | `total_amount`          | DOUBLE       | Total charged to passenger (excludes cash tips)                                               |
+| 18  | `congestion_surcharge`  | DOUBLE       | NYC taxi surcharge added **Feb 2019** — `NULL` in older records                               |
+| 19  | `Airport_fee`           | DOUBLE       | JFK/LaGuardia pickup/dropoff fee added **Jul 2022** — `NULL` in older records                 |
+| 20  | `cbd_congestion_fee`    | DOUBLE       | Central Business District congestion pricing fee added **Jan 2025** — `NULL` in older records |
 
 ### Key Data Quality Caveats
 
