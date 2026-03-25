@@ -1,4 +1,5 @@
 import datetime
+import httpx
 import pytest
 from unittest.mock import patch, MagicMock
 from pipeline.extract.tlc_client import _build_url, download_monthly_data, MonthNotAvailableError # pyright: ignore[reportPrivateUsage]
@@ -27,6 +28,8 @@ class TestBuildUrl:
       _build_url(2023, 13)
 
 class TestDownloadMonthlyData:
+  mock_request = httpx.Request("GET", "https://test.com")
+
   @patch("httpx.stream")
   def test_returns_bytes_on_success(self, mock_stream: MagicMock):
     mock_response = MagicMock()
@@ -45,11 +48,28 @@ class TestDownloadMonthlyData:
     with pytest.raises(MonthNotAvailableError, match="Data for 2025-05 not found."):
       download_monthly_data(2025, 5)
 
-  def test_raises_month_not_available_error_on_404(self):
-    pass
+  @patch("httpx.stream")
+  def test_raises_month_not_available_error_on_404(self, mock_stream:MagicMock):
+    mock_response = MagicMock()
+    mock_stream.return_value.__enter__.return_value = mock_response # pyright: ignore[reportUnknownMemberType]
+    mock_response.status_code = 404
 
-  def test_raises_http_status_error_on_500(self):
-    pass
+    with pytest.raises(MonthNotAvailableError, match="Data for 2025-05 not found."):
+      download_monthly_data(2025, 5)
+  
+  @patch("httpx.stream")
+  def test_raises_http_status_error_on_500(self, mock_stream:MagicMock):
+    mock_response = MagicMock()
+    mock_stream.return_value.__enter__.return_value = mock_response # pyright: ignore[reportUnknownMemberType]
+    mock_response.status_code = 500
+    mock_response.raise_for_status.side_effect = httpx.HTTPStatusError("Internal Server Error", request=self.mock_request, response=mock_response)
 
-  def test_raises_on_network_error(self):
-    pass
+    with pytest.raises(httpx.HTTPStatusError, match="Internal Server Error"):
+      download_monthly_data(2025, 5)
+
+  @patch("httpx.stream")
+  def test_raises_on_network_error(self, mock_stream:MagicMock):
+    mock_stream.side_effect = httpx.RequestError("Network Error", request=self.mock_request)
+
+    with pytest.raises(httpx.RequestError, match="Network Error"):
+      download_monthly_data(2025, 5)
