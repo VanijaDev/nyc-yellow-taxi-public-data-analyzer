@@ -29,7 +29,7 @@ Plain Python script — no Airflow yet. Goal: reliably download a raw Parquet fi
 - [x] Implement extract function: download monthly Parquet from TLC public endpoint
 - [x] Handle missing month: return a clear signal when the source has no data for a target month
 - [x] Run manually and confirm the file downloads correctly
-- [ ] **Tests:** correct URL construction, HTTP error handling, missing-month signal
+- [x] **Tests:** correct URL construction, HTTP error handling, missing-month signal
 
 ---
 
