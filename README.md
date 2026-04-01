@@ -58,7 +58,7 @@ The result is a self-updating analytics platform that answers concrete questions
 
 ---
 
-## Architecture Overview
+## Architecture Overview (High Level)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
