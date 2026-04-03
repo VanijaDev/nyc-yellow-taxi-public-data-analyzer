@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Production-style ELT data platform for analyzing NYC Yellow Taxi trip data"
 requires-python = ">=3.13"
 dependencies = [
+    "boto3>=1.42.83",
     "httpx>=0.28.1",
 ]
 
@@ -14,11 +15,13 @@ dev = [
     "mypy>=1.10.0",
     "pytest>=8.0.0",
     "pytest-cov>=5.0.0",
+    "python-dotenv>=1.2.2",
 ]
 
 [tool.ruff]
 target-version = "py313"
 line-length = 88
+unfixable = ["F401"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
