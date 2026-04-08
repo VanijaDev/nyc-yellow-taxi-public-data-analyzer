@@ -40,11 +40,11 @@ Goal: upload the raw downloaded file to S3 unchanged.
 - [x] Create S3 bucket (`nyc-taxi-raw`, Account Regional namespace, us-east-1)
 - [x] Create IAM user (`nyc-taxi-pipeline`) with `AmazonS3FullAccess` policy
 - [x] Generate access keys and configure `.env` with AWS credentials
-- [ ] Install `boto3` (AWS SDK for Python)
-- [ ] Create config module to load environment variables
-- [ ] Implement S3 land function: upload raw file to `s3://nyc-taxi-raw/{year}/{month}/`
-- [ ] Verify file appears in S3 with correct path and size
-- [ ] **Tests:** correct S3 key construction, file uploaded unchanged, error on invalid bucket/credentials
+- [x] Install `boto3` (AWS SDK for Python)
+- [x] Create config module to load environment variables
+- [x] Implement S3 land function: upload raw file to `s3://nyc-taxi-raw/{year}/{month}/`
+- [x] Verify file appears in S3 with correct path and size
+- [x] **Tests:** correct S3 key construction, file uploaded unchanged, error on invalid bucket/credentials
 
 ---
 
