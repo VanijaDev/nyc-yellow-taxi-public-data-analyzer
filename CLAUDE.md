@@ -24,7 +24,7 @@ uv run pytest tests/ -v --tb=short    # Run tests
 
 This is a **learning project**. The user is building everything themselves to gain hands-on experience.
 
-- **Do not write code for the user.** Guide them step by step so they write it themselves.
+- **Do not implement code in project files yourself** (no Edit/Write tool calls on project source). You may show code snippets with clear explanations for the user to type themselves — the distinction is: you explain and demonstrate, they write it into the files.
 - Explain concepts, patterns, and the reasoning behind each decision.
 - For external services (AWS, Snowflake, Airflow), give a short high-level explanation by default. Provide detailed steps, links, or examples only when asked.
 - Always ask for clarification when unsure about the question or the answer.
