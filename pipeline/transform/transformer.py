@@ -7,7 +7,7 @@ logger = structlog.get_logger()
 VALID_PAYMENT_TYPES = {1, 2, 3}  # Credit card, Cash, No Charge
 VALID_RATE_CODE_IDS = set(
     range(1, 7)
-)  # 1= Standard rate 2=JFK 3=Newark 4=Nassau or Westchester 5=Negotiated fare 6=Group ride
+)  # 1= Standard rate 2=JFK 3=Newark 4=Nassau or Westchester 5=Negotiated fare 6=Group ride  # noqa: E501
 VALID_LOCATION_ID_RANGE = (1, 265)
 MAX_TRIP_DISTANCE_MILES = 200.0
 MAX_FARE_AMOUNT = 500.0
