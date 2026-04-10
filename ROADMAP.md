@@ -52,14 +52,14 @@ Goal: upload the raw downloaded file to S3 unchanged.
 
 Goal: take a raw Parquet from S3, produce clean fact/dim DataFrames.
 
-- [ ] Handle schema evolution: detect pre-2016 (lat/lng) vs modern (zone ID) format
-- [ ] Implement null handling for all 20 fields
-- [ ] Implement business rule validation (pickup < dropoff, positive fares, valid location IDs)
-- [ ] Implement outlier removal
-- [ ] Handle nullable fee fields correctly (congestion_surcharge, Airport_fee, cbd_congestion_fee)
-- [ ] Filter invalid payment types (Dispute=4, Unknown=5, Voided=6)
-- [ ] Derive computed fields: trip_duration, revenue_per_mile, average_speed
-- [ ] Model into fact_trips and dimension tables
+- [x] Handle schema evolution: detect pre-2016 (lat/lng) vs modern (zone ID) format
+- [x] Implement null handling for all 20 fields
+- [x] Implement business rule validation (pickup < dropoff, positive fares, valid location IDs)
+- [x] Implement outlier removal
+- [x] Handle nullable fee fields correctly (congestion_surcharge, Airport_fee, cbd_congestion_fee)
+- [x] Filter invalid payment types (Dispute=4, Unknown=5, Voided=6)
+- [x] Derive computed fields: trip_duration, revenue_per_mile, average_speed
+- [x] Model into fact_trips and dimension tables
 - [ ] Run manually and inspect output DataFrames
 - [ ] **Tests:** each validation rule, each derived field, null handling, invalid row filtering — use a small Parquet fixture
 

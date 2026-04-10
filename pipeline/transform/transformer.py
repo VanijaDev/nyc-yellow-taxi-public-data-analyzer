@@ -1,7 +1,7 @@
-# import io
-
-# import numpy as np
 import pandas as pd
+import structlog
+
+logger = structlog.get_logger()
 
 # --- Constants ---
 VALID_PAYMENT_TYPES = {1, 2, 3}  # Credit card, Cash, No Charge
@@ -28,7 +28,7 @@ class SchemaNotSupportedError(Exception):
     pass
 
 
-def validate_schema_format(df: pd.DataFrame) -> None:
+def _validate_schema_format(df: pd.DataFrame) -> None:
     if MODERN_LOCATION_COLUMNS.issubset(df.columns):
         return
 
@@ -44,7 +44,7 @@ def validate_schema_format(df: pd.DataFrame) -> None:
     )
 
 
-def validate_and_clean(df: pd.DataFrame) -> pd.DataFrame:
+def _validate_and_clean(df: pd.DataFrame) -> pd.DataFrame:
     lo, hi = VALID_LOCATION_ID_RANGE
 
     valid = (
@@ -60,7 +60,7 @@ def validate_and_clean(df: pd.DataFrame) -> pd.DataFrame:
         & df["payment_type"].isin(VALID_PAYMENT_TYPES)
         & df["RatecodeID"].isin(VALID_RATE_CODE_IDS)
         & df["PULocationID"].notna()
-        & df["PLULOcationID"].between(lo, hi)
+        & df["PULocationID"].between(lo, hi)
         & df["DOLocationID"].notna()
         & df["DOLocationID"].between(lo, hi)
         & (
@@ -71,8 +71,61 @@ def validate_and_clean(df: pd.DataFrame) -> pd.DataFrame:
 
     cleaned = df[valid].reset_index(drop=True)
     dropped = len(df) - len(cleaned)
-    print(
-        f"validate_and_clean: dropped {dropped} of {len(df)} records ({dropped / len(df):.1%})"  # noqa: E501
-    )
+    logger.info("validate_and_clean", dropped=dropped, total=len(df))
 
     return cleaned
+
+
+def _enrich_fields(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+
+    df["trip_duration_min"] = (
+        df["tpep_dropoff_datetime"] - df["tpep_pickup_datetime"]
+    ).dt.total_seconds() / 60
+
+    df["revenue_per_mile"] = df["total_amount"] / df["trip_distance"].replace(
+        0, float("nan")
+    )
+
+    df["avg_speed_mph"] = df["trip_distance"] / (
+        df["trip_duration_min"].replace(0, float("nan")) / 60
+    )
+
+    df = df[df["avg_speed_mph"].isna() | (df["avg_speed_mph"] <= MAX_AVG_SPEED_MPH)]
+
+    return df.reset_index(drop=True)
+
+
+FACT_TRIPS_COLUMNS = {
+    "PULocationID": "pickup_location_id",
+    "DOLocationID": "dropoff_location_id",
+    "tpep_pickup_datetime": "pickup_datetime",
+    "tpep_dropoff_datetime": "dropoff_datetime",
+    "passenger_count": "passenger_count",
+    "trip_distance": "trip_distance",
+    "fare_amount": "fare_amount",
+    "tip_amount": "tip_amount",
+    "total_amount": "total_amount",
+    "payment_type": "payment_type",
+    "RatecodeID": "rate_code_id",
+    "VendorID": "vendor_id",
+    "trip_duration_min": "trip_duration_min",
+    "revenue_per_mile": "revenue_per_mile",
+    "avg_speed_mph": "avg_speed_mph",
+    "congestion_surcharge": "congestion_surcharge",
+    "Airport_fee": "airport_fee",
+    "cbd_congestion_fee": "cbd_congestion_fee",
+}
+
+
+def _build_fact_trips(df: pd.DataFrame) -> pd.DataFrame:
+    return df[list(FACT_TRIPS_COLUMNS.keys())].rename(columns=FACT_TRIPS_COLUMNS)
+
+
+def transform(df: pd.DataFrame) -> pd.DataFrame:
+    _validate_schema_format(df)
+    cleaned = _validate_and_clean(df)
+    enriched = _enrich_fields(cleaned)
+    fact_trips = _build_fact_trips(enriched)
+
+    return fact_trips
