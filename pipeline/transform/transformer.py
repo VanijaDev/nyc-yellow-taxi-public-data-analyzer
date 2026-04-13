@@ -71,7 +71,7 @@ def _validate_and_clean(df: pd.DataFrame) -> pd.DataFrame:
 
     cleaned = df[valid].reset_index(drop=True)
     dropped = len(df) - len(cleaned)
-    logger.info("validate_and_clean", dropped=dropped, total=len(df))
+    logger.info("validate_and_clean", dropped=f"{dropped:,}", total=f"{len(df):,}")
 
     return cleaned
 
@@ -119,7 +119,9 @@ FACT_TRIPS_COLUMNS = {
 
 
 def _build_fact_trips(df: pd.DataFrame) -> pd.DataFrame:
-    return df[list(FACT_TRIPS_COLUMNS.keys())].rename(columns=FACT_TRIPS_COLUMNS)
+    return df.reindex(columns=list(FACT_TRIPS_COLUMNS.keys())).rename(
+        columns=FACT_TRIPS_COLUMNS
+    )
 
 
 def transform(df: pd.DataFrame) -> pd.DataFrame:
