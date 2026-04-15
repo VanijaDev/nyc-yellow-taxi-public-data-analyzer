@@ -60,8 +60,8 @@ Goal: take a raw Parquet from S3, produce clean fact/dim DataFrames.
 - [x] Filter invalid payment types (Dispute=4, Unknown=5, Voided=6)
 - [x] Derive computed fields: trip_duration, revenue_per_mile, average_speed
 - [x] Model into fact_trips and dimension tables
-- [ ] Run manually and inspect output DataFrames
-- [ ] **Tests:** each validation rule, each derived field, null handling, invalid row filtering — use a small Parquet fixture
+- [x] Run manually and inspect output DataFrames
+- [x] **Tests:** each validation rule, each derived field, null handling, invalid row filtering — use a small Parquet fixture
 
 ---
 
